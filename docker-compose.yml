@@ -1,0 +1,54 @@
+# All four commands use the same image. Profiles prevent accidental simultaneous simulations.
+# Examples: docker compose run --rm lowlevel
+#           COURSE_WIDTH=2.0 docker compose run --rm course
+#           docker compose run --rm shell
+x-go1-common: &go1-common
+  image: ${SIM_IMAGE:-go1-sim:public}
+  platform: linux/amd64
+  build:
+    context: .
+    dockerfile: ${SIM_DOCKERFILE:-Dockerfile}
+    args:
+      BASE_IMAGE: registry.cookcloud.ru/base_images/ros2-base-humble-amd64:${BASE_VERSION:-v1.0.1}
+      BUILD_JOBS: ${BUILD_JOBS:-1}
+  network_mode: host
+  ipc: host
+  shm_size: "2gb"
+  stdin_open: true
+  tty: true
+  environment:
+    HOST_UID: ${HOST_UID:-1000}
+    HOST_GID: ${HOST_GID:-1000}
+    DISPLAY: ${DISPLAY:-:0}
+    QT_X11_NO_MITSHM: "1"
+    ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+    GO1_DDS_LOCAL: ${GO1_DDS_LOCAL:-0}
+    CYCLONEDDS_URI: ${GO1_SIM_CYCLONEDDS_URI:-file:///home/ros/ros2_custom_config_setup/cyclonedds.xml}
+    GO1_GAZEBO_LOCKSTEP: ${GO1_GAZEBO_LOCKSTEP:-false}
+  devices:
+    - /dev/dri:/dev/dri
+  volumes:
+    - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    - ./user_data/ros2_custom_config_setup:/home/ros/ros2_custom_config_setup:ro
+  working_dir: /home/ros/go1_ws
+
+services:
+  lowlevel:
+    <<: *go1-common
+    profiles: [manual]
+    command: ["ros2", "launch", "go1_simulation", "scenario.launch.py", "scenario:=lowlevel", "gui:=${GUI:-true}", "cameras:=${GO1_CAMERAS:-auto}"]
+
+  highlevel:
+    <<: *go1-common
+    profiles: [manual]
+    command: ["ros2", "launch", "go1_simulation", "scenario.launch.py", "scenario:=highlevel", "gui:=${GUI:-true}", "cameras:=${GO1_CAMERAS:-auto}"]
+
+  course:
+    <<: *go1-common
+    profiles: [manual]
+    command: ["ros2", "launch", "go1_simulation", "scenario.launch.py", "scenario:=course", "width:=${COURSE_WIDTH:-1.0}", "gui:=${GUI:-true}", "cameras:=${GO1_CAMERAS:-auto}"]
+
+  shell:
+    <<: *go1-common
+    profiles: [manual]
+    command: ["bash"]

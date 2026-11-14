@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <gazebo reference="trunk">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+  </gazebo>
+
+  <gazebo reference="imu_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <xacro:macro name="leg_gazebo" params="name">
+    <gazebo reference="${name}_hip">
+      <mu1>0.2</mu1>
+      <mu2>0.2</mu2>
+      <material>Gazebo/DarkGrey</material>
+    </gazebo>
+    <gazebo reference="${name}_thigh">
+      <mu1>0.2</mu1>
+      <mu2>0.2</mu2>
+      <self_collide>1</self_collide>
+      <material>Gazebo/DarkGrey</material>
+      <kp>1000000.0</kp>
+      <kd>1.0</kd>
+    </gazebo>
+    <gazebo reference="${name}_calf">
+      <mu1>0.2</mu1>
+      <mu2>0.2</mu2>
+      <self_collide>1</self_collide>
+    </gazebo>
+    <!-- Контакт стопы с полом мягкий и демпфированный, подобран по ходьбе в Gazebo (kp 1e6 при kd 1 давал отскоки стопы и прыжки корпуса).
+         Формула ODE для erp - h*kp/(h*kp+kd), h = 1 мс; при kp 1e4 и kd 200 erp около 0.05 -->
+    <!-- Keep the distinct foot collision when URDF is converted to SDF. -->
+    <gazebo reference="${name}_foot_fixed">
+      <preserveFixedJoint>true</preserveFixedJoint>
+    </gazebo>
+    <gazebo reference="${name}_foot">
+      <mu1>0.6</mu1>
+      <mu2>0.6</mu2>
+      <self_collide>1</self_collide>
+      <material>Gazebo/DarkGrey</material>
+      <kp>10000.0</kp>
+      <kd>200.0</kd>
+      <sensor name="${name}_foot_contact" type="contact">
+        <always_on>true</always_on>
+        <update_rate>100</update_rate>
+        <contact>
+          <collision>${name}_foot_collision</collision>
+        </contact>
+        <plugin name="${name}_foot_contact_ros" filename="libgazebo_ros_bumper.so">
+          <ros>
+            <remapping>bumper_states:=/go1_contacts/${name}</remapping>
+          </ros>
+          <frame_name>world</frame_name>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:leg_gazebo name="FL"/>
+  <xacro:leg_gazebo name="FR"/>
+  <xacro:leg_gazebo name="RL"/>
+  <xacro:leg_gazebo name="RR"/>
+
+  <xacro:property name="init_hip" value="0.0"/>
+  <xacro:property name="init_thigh" value="0.8536"/>
+  <xacro:property name="init_calf" value="-1.7072"/>
+
+  <xacro:macro name="ros2_control_joint" params="joint init">
+    <joint name="${joint}">
+      <command_interface name="effort"/>
+      <state_interface name="position">
+        <param name="initial_value">${init}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="leg_ros2_control" params="name">
+    <xacro:ros2_control_joint joint="${name}_hip_joint" init="${init_hip}"/>
+    <xacro:ros2_control_joint joint="${name}_thigh_joint" init="${init_thigh}"/>
+    <xacro:ros2_control_joint joint="${name}_calf_joint" init="${init_calf}"/>
+  </xacro:macro>
+
+  <xacro:if value="$(arg sim)">
+
+    <ros2_control name="go1_gazebo_system" type="system">
+      <hardware>
+        <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+      </hardware>
+      <xacro:leg_ros2_control name="FL"/>
+      <xacro:leg_ros2_control name="FR"/>
+      <xacro:leg_ros2_control name="RL"/>
+      <xacro:leg_ros2_control name="RR"/>
+    </ros2_control>
+
+    <gazebo>
+      <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+        <parameters>$(arg ros_control_file)</parameters>
+      </plugin>
+    </gazebo>
+
+    <gazebo>
+      <plugin name="gazebo_ros_force" filename="libgazebo_ros_force.so">
+        <ros>
+          <remapping>gazebo_ros_force:=apply_force/trunk</remapping>
+        </ros>
+        <link_name>trunk</link_name>
+        <force_frame>link</force_frame>
+      </plugin>
+    </gazebo>
+
+    <!-- Public diagnostic odometry, without ground-truth TF. -->
+    <xacro:if value="${'$(arg gazebo_gt_mode)' == 'public'}">
+    <gazebo>
+      <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+        <ros>
+          <remapping>odom:=odom/ground_truth</remapping>
+        </ros>
+        <body_name>trunk</body_name>
+        <!-- The ROS reference frame is named odom, with Gazebo world origin as its origin. -->
+        <frame_name>odom</frame_name>
+        <publish_tf>false</publish_tf>
+        <update_rate>20.0</update_rate>
+        <xyz_offset>0 0 0</xyz_offset>
+        <rpy_offset>0 0 0</rpy_offset>
+        <gaussian_noise>0.0</gaussian_noise>
+      </plugin>
+    </gazebo>
+    </xacro:if>
+
+    <gazebo reference="imu_link">
+      <gravity>true</gravity>
+      <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>200</update_rate>
+        <visualize>false</visualize>
+        <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+          <ros>
+            <namespace>/imu</namespace>
+            <remapping>~/out:=data</remapping>
+          </ros>
+          <frame_name>imu_link</frame_name>
+          <initial_orientation_as_reference>false</initial_orientation_as_reference>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+  </xacro:if>
+
+</robot>

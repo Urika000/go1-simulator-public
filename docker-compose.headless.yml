@@ -1,0 +1,26 @@
+# Optional host-independent headless operation; no new simulation profile.
+# docker compose -f docker-compose.yml -f docker-compose.headless.yml run --rm highlevel
+services:
+  lowlevel:
+    devices: !reset []
+    volumes: !reset []
+    environment:
+      DISPLAY: ""
+    command: ["ros2", "launch", "go1_simulation", "scenario.launch.py", "scenario:=lowlevel", "gui:=false", "cameras:=${GO1_CAMERAS:-auto}"]
+  highlevel:
+    devices: !reset []
+    volumes: !reset []
+    environment:
+      DISPLAY: ""
+    command: ["ros2", "launch", "go1_simulation", "scenario.launch.py", "scenario:=highlevel", "gui:=false", "cameras:=${GO1_CAMERAS:-auto}"]
+  course:
+    devices: !reset []
+    volumes: !reset []
+    environment:
+      DISPLAY: ""
+    command: ["ros2", "launch", "go1_simulation", "scenario.launch.py", "scenario:=course", "width:=${COURSE_WIDTH:-1.0}", "gui:=false", "cameras:=${GO1_CAMERAS:-auto}"]
+  shell:
+    devices: !reset []
+    volumes: !reset []
+    environment:
+      DISPLAY: ""

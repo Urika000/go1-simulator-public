@@ -1,0 +1,147 @@
+dictionary: DICT_4X4_50
+course_width: 2.0
+marker_size_total: 0.25
+marker_size_black: 0.1875
+start:
+- 0.0
+- 0.0
+- 0.0
+finish:
+- 22.7
+- 0.0
+- 0.0
+cylinders:
+- x: 5.0
+  y: -0.95
+  radius: 0.2
+- x: 5.0
+  y: 0.95
+  radius: 0.2
+- x: 6.1
+  y: 0.0
+  radius: 0.2
+- x: 7.2
+  y: -0.95
+  radius: 0.2
+- x: 7.2
+  y: 0.95
+  radius: 0.2
+chicanes:
+- x: 16.3
+  y: 0.65
+  size_x: 0.14
+  size_y: 0.7
+- x: 18.1
+  y: -0.65
+  size_x: 0.14
+  size_y: 0.7
+- x: 19.9
+  y: 0.65
+  size_x: 0.14
+  size_y: 0.7
+markers:
+- id: 0
+  x: -1.497
+  y: 0.0
+  z: 0.36
+  yaw_normal: 0.0
+- id: 1
+  x: -0.3
+  y: -0.997
+  z: 0.36
+  yaw_normal: 1.570796
+- id: 2
+  x: -0.3
+  y: 0.997
+  z: 0.36
+  yaw_normal: -1.570796
+- id: 3
+  x: 2.1
+  y: -0.997
+  z: 0.36
+  yaw_normal: 1.570796
+- id: 4
+  x: 2.1
+  y: 0.997
+  z: 0.36
+  yaw_normal: -1.570796
+- id: 5
+  x: 9.703
+  y: -2.9
+  z: 0.36
+  yaw_normal: 0.0
+- id: 6
+  x: 10.25
+  y: 0.997
+  z: 0.36
+  yaw_normal: -1.570796
+- id: 7
+  x: 11.225
+  y: -4.797
+  z: 0.36
+  yaw_normal: 1.570796
+- id: 8
+  x: 11.697
+  y: -0.9
+  z: 0.36
+  yaw_normal: 3.141593
+- id: 9
+  x: 12.75
+  y: -2.803
+  z: 0.36
+  yaw_normal: -1.570796
+- id: 10
+  x: 13.803
+  y: -0.9
+  z: 0.36
+  yaw_normal: 0.0
+- id: 11
+  x: 14.275
+  y: -4.797
+  z: 0.36
+  yaw_normal: 1.570796
+- id: 12
+  x: 15.05
+  y: 0.997
+  z: 0.36
+  yaw_normal: -1.570796
+- id: 13
+  x: 15.797
+  y: -2.9
+  z: 0.36
+  yaw_normal: 3.141593
+- id: 14
+  x: 17.133333
+  y: -0.997
+  z: 0.36
+  yaw_normal: 1.570796
+- id: 15
+  x: 17.55
+  y: 0.997
+  z: 0.36
+  yaw_normal: -1.570796
+- id: 16
+  x: 19.8
+  y: -0.997
+  z: 0.36
+  yaw_normal: 1.570796
+- id: 17
+  x: 20.05
+  y: 0.997
+  z: 0.36
+  yaw_normal: -1.570796
+- id: 18
+  x: 22.466667
+  y: -0.997
+  z: 0.36
+  yaw_normal: 1.570796
+- id: 19
+  x: 22.55
+  y: 0.997
+  z: 0.36
+  yaw_normal: -1.570796
+- id: 20
+  x: 23.797
+  y: 0.0
+  z: 0.36
+  yaw_normal: 3.141593

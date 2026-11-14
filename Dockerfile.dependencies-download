@@ -1,0 +1,5 @@
+# Tooling only: fetch Python wheels before expensive application compilation.
+ARG RAGEOS_BASE=go1-source-cache-base:local
+FROM ${RAGEOS_BASE}
+USER root
+RUN python3 -m pip --version || (apt-get update && apt-get install -y --no-upgrade --no-install-recommends python3-pip && rm -rf /var/lib/apt/lists/*)

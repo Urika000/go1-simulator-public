@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- V5.6 EXPERIMENT: loopback-only, multicast for discovery (SPDP), unicast for user data.
+     Must be used by both host-network containers and host CLI; NOT for remote robots. -->
+<CycloneDDS xmlns="https://cdds.io/config">
+  <Domain id="any">
+    <General>
+      <Interfaces>
+        <!-- Linux 'lo' does not advertise MULTICAST on every system; force capability. -->
+        <NetworkInterface name="lo" multicast="true" />
+      </Interfaces>
+      <AllowMulticast>spdp</AllowMulticast>
+      <EnableMulticastLoopback>true</EnableMulticastLoopback>
+    </General>
+    <Discovery>
+      <!-- Multicast discovery removes the need to probe 121 localhost UDP ports. -->
+      <ParticipantIndex>none</ParticipantIndex>
+    </Discovery>
+    <Internal>
+      <SocketReceiveBufferSize max="10MB" />
+    </Internal>
+  </Domain>
+</CycloneDDS>

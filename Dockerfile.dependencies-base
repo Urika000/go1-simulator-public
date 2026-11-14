@@ -1,0 +1,14 @@
+# Owner-provided RageOS; resolved and verified locally by the build script.
+ARG ROS_BASE=registry.cookcloud.ru/base_images/ros2-base-humble-amd64:v1.0.1
+FROM ${ROS_BASE}
+USER root
+# RageOS already owns ros:ros at 1000:1000. Fail explicitly on contract drift.
+RUN test "$(id -u ros)" = 1000 && test "$(id -g ros)" = 1000 \
+    && test -x /ros2_custom_entrypoint.sh
+# Keep official Ubuntu repositories; HTTPS avoids stale HTTP intermediary indexes.
+# ROS retains its signed HTTP source (packages.ros.org TLS hostname is invalid).
+RUN sed -i -e 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g' \
+           -e 's|http://security.ubuntu.com|https://security.ubuntu.com|g' \
+           /etc/apt/sources.list /etc/apt/sources.list.d/* \
+    && printf 'Acquire::Retries "3";\nAcquire::http::Timeout "60";\nAcquire::https::Timeout "60";\n' > /etc/apt/apt.conf.d/80go1-downloads
+ENV CYCLONEDDS_URI="" RMW_IMPLEMENTATION=rmw_cyclonedds_cpp

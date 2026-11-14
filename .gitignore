@@ -1,0 +1,7 @@
+.dependency-cache/
+__pycache__/
+*.pyc
+.env
+build/
+install/
+log/

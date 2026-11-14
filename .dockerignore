@@ -1,0 +1,20 @@
+**/.git
+**/__pycache__
+**/.pytest_cache
+**/build
+**/install
+**/log
+*.zip
+*.patch
+user_data/developer_ws
+user_data/extra_files_to_container
+docs/_build
+# Reusable host download cache is not part of the build context.
+.dependency-cache/pip
+.dependency-cache/git
+reports
+
+# Local verification outputs and accidental editor backups
+.cleanup-checks
+**/*.save
+**/*.bak

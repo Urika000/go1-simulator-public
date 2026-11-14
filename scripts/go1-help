@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -eu
+cat <<'EOF'
+UNITREE GO1 · ROS 2 Humble · Gazebo Classic · MuJoCo
+
+Docker Compose (from project root on host):
+  docker compose run --rm lowlevel
+  docker compose run --rm highlevel
+  docker compose run --rm course
+  COURSE_WIDTH=2.0 docker compose run --rm course
+  docker compose run --rm shell
+  GUI=false docker compose run --rm highlevel
+
+Inside the container:
+  ros2 launch go1_simulation scenario.launch.py scenario:=lowlevel gui:=false
+  ros2 launch go1_simulation scenario.launch.py scenario:=highlevel gui:=true
+  ros2 launch go1_simulation scenario.launch.py scenario:=course width:=1.0 gui:=true
+  ros2 launch go1_simulation scenario.launch.py --show-args
+
+Lowlevel: /lowcmd, /lowstate; Developer reference /odom/ground_truth.
+Highlevel/Course: /cmd_vel, /body_pose, /joint_states, /imu/data, /scan, /foot_force;
+                  Developer reference /odom/ground_truth (without ground-truth TF).
+
+One simulation per ROS_DOMAIN_ID. Tools for organizers are distributed separately.
+EOF

@@ -1,0 +1,85 @@
+# Контроллеры ros2_control (gazebo_ros2_control).
+#
+# joint_states_controller        -> /joint_states
+# joint_group_effort_controller  -> принимает trajectory_msgs/JointTrajectory на
+#                                   /joint_group_effort_controller/joint_trajectory (его публикует champ);
+#                                   положение -> момент через PID (в ROS1: effort_controllers/JointTrajectoryController).
+#
+# Частота 1000 Гц = шагу физики мира (max_step_size 0.001, как в ROS1, где gazebo_ros_control работал с
+# периодом шага физики). ПИД-коэффициенты (p 180, i 20, d 7) взяты из ROS1-конфига Go1. Оценка устойчивости
+# дискретной D-составляющей: d*dt/I < 2 при I голени порядка 6e-3 кг*м^2 даёт dt < ~1.7 мс, поэтому 250-500 Гц
+# с этим d брать не стоит. Если real-time factor сильно ниже 1, снижайте update_rate вместе с d (например,
+# 500 Гц и d = 3) и проверяйте походку.
+controller_manager:
+  ros__parameters:
+    use_sim_time: true
+    update_rate: 1000
+
+    joint_states_controller:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    joint_group_effort_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_group_effort_forward_controller:
+      type: effort_controllers/JointGroupEffortController
+
+joint_states_controller:
+  ros__parameters:
+    use_sim_time: true
+
+joint_group_effort_controller:
+  ros__parameters:
+    use_sim_time: true
+    joints:
+      - FL_hip_joint
+      - FL_thigh_joint
+      - FL_calf_joint
+      - FR_hip_joint
+      - FR_thigh_joint
+      - FR_calf_joint
+      - RL_hip_joint
+      - RL_thigh_joint
+      - RL_calf_joint
+      - RR_hip_joint
+      - RR_thigh_joint
+      - RR_calf_joint
+    command_interfaces:
+      - effort
+    state_interfaces:
+      - position
+      - velocity
+    # Траектории приходят топиком (champ публикует их с частотой своего цикла), action-цель не используется.
+    gains:
+      FL_hip_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      FL_thigh_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      FL_calf_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      FR_hip_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      FR_thigh_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      FR_calf_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      RL_hip_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      RL_thigh_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      RL_calf_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      RR_hip_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      RR_thigh_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+      RR_calf_joint: {p: 180.0, i: 20.0, d: 7.0, i_clamp: 5.0}
+
+# Прямая подача моментов (режим control_mode:=lowcmd). Порядок суставов - как у Unitree (FR, FL, RR, RL), моменты
+# приходят в /joint_group_effort_forward_controller/commands (Float64MultiArray) от go1_unitree_bridge,
+# который считает tau = tau_ff + kp*(q_des - q) + kd*(dq_des - dq) по LowCmd.
+joint_group_effort_forward_controller:
+  ros__parameters:
+    use_sim_time: true
+    joints:
+      - FR_hip_joint
+      - FR_thigh_joint
+      - FR_calf_joint
+      - FL_hip_joint
+      - FL_thigh_joint
+      - FL_calf_joint
+      - RR_hip_joint
+      - RR_thigh_joint
+      - RR_calf_joint
+      - RL_hip_joint
+      - RL_thigh_joint
+      - RL_calf_joint

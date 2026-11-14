@@ -1,0 +1,4 @@
+# Параметры узла gzserver (libgazebo_ros_init): частота публикации /clock.
+gazebo:
+  ros__parameters:
+    publish_rate: 200.0

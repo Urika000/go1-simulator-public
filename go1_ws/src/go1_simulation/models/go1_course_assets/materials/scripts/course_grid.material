@@ -1,0 +1,20 @@
+// The floor visual is one non-repeating image across 30 x 14 metres.
+// 1 metre major lines, 0.25 metre minor subdivisions.
+material GoCourse/FloorGrid
+{
+  receive_shadows on
+  technique
+  {
+    pass
+    {
+      lighting on
+      ambient 0.75 0.75 0.75 1
+      diffuse 1 1 1 1
+      texture_unit
+      {
+        texture course_grid.png
+        filtering trilinear
+      }
+    }
+  }
+}

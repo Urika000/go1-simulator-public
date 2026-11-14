@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- CycloneDDS: по умолчанию multicast на всех интерфейсах (host network).
+     Для связи с роботом/другим ПК по unicast раскомментируйте Peers и впишите IP. -->
+<CycloneDDS xmlns="https://cdds.io/config">
+  <Domain id="any">
+    <General>
+      <AllowMulticast>default</AllowMulticast>
+    </General>
+    <!-- большие сообщения (кадры камер, облака точек) теряются и тормозят при маленьком буфере приёма сокета.
+         Задан только максимум: Cyclone просит до 10 МБ и работает с тем, что даст ядро (min здесь ставить нельзя - при нехватке домен не создастся) -->
+    <Internal>
+      <SocketReceiveBufferSize max="10MB"/>
+    </Internal>
+    <!--
+    <Discovery>
+      <Peers><Peer address="192.168.123.15"/></Peers>
+    </Discovery>
+    -->
+  </Domain>
+</CycloneDDS>

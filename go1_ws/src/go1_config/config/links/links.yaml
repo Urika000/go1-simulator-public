@@ -1,0 +1,29 @@
+# Имена линков. base - корень URDF (champ считает положение бёдер относительно него).
+# Третий линк ноги (calf) используется узлом contact_sensor для определения контакта стопы с землёй.
+/**:
+  ros__parameters:
+    links_map:
+      base: trunk
+      left_front:
+        - FL_hip
+        - FL_thigh
+        - FL_calf
+        - FL_foot
+
+      right_front:
+        - FR_hip
+        - FR_thigh
+        - FR_calf
+        - FR_foot
+
+      left_hind:
+        - RL_hip
+        - RL_thigh
+        - RL_calf
+        - RL_foot
+
+      right_hind:
+        - RR_hip
+        - RR_thigh
+        - RR_calf
+        - RR_foot
