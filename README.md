@@ -1,5 +1,7 @@
 # Hackathon Go1 Simulator
 
+**[Подробная инструкция запуска Simulator: три способа, T2–T5, Harbor и ROS 2](docs/SIMULATOR_LAUNCH_GUIDE_RU.md)**
+
 Локальная среда разработки для Unitree Go1: MuJoCo Lowlevel (T2/T3),
 Gazebo Classic + CHAMP Highlevel (T4), Course шириной 1 и 2 м (T5), Shell.
 Включены модели Go1, source-built IMU plugin, пять RGB-D камер и ROS 2 API.

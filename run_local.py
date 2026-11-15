@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Host-only LOCAL launcher. Simulator Compose + Participant Docker CLI."""
+"""Host-only LOCAL launcher. Simulator Compose, optionally with Participant Docker CLI."""
 import argparse
 import fcntl
 import json
@@ -114,7 +114,8 @@ class LocalRun:
 
     def start(self):
         docker('info', stdout=subprocess.DEVNULL)
-        for image in (self.args.sim_image, self.args.participant_image):
+        images = [self.args.sim_image] if self.args.sim_only else [self.args.sim_image, self.args.participant_image]
+        for image in images:
             data = json.loads(docker('image', 'inspect', image, capture_output=True).stdout)[0]
             if data['Os'] != 'linux' or data['Architecture'] != 'amd64':
                 raise RuntimeError(f'{image}: requires linux/amd64')
@@ -126,43 +127,49 @@ class LocalRun:
                         GO1_GAZEBO_LOCKSTEP='true', GO1_CAMERAS='true' if self.args.task == 'T5' else 'false',
                         COURSE_WIDTH=self.args.course_width, GUI=str(self.args.gui).lower())
         subprocess.run(self.compose + ['config', '--quiet'], env=self.env, check=True, timeout=30)
-        print(f'Run={self.token} domain={domain} task={self.args.task}\nSimulator={self.sim}\nParticipant={self.part}', flush=True)
+        print(f'Run={self.token} domain={domain} task={self.args.task}\nSimulator={self.sim}', flush=True)
+        if not self.args.sim_only:
+            print(f'Participant={self.part}', flush=True)
         self.check_stop()
         subprocess.run(self.compose + ['run', '--no-deps', '--pull', 'never', '-d', '--name', self.sim, mode],
                        env=self.env, check=True, timeout=30, stdout=subprocess.DEVNULL)
         self.wait_ready(mode)
         self.check_stop()
-        # Inline XML: arbitrary participant images need no project-specific files.
-        xml = (ROOT/'user_data/ros2_custom_config_setup/cyclonedds_local.xml').read_text()
-        environment = {'ROS_DOMAIN_ID': str(domain), 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp',
-                       'CYCLONEDDS_URI': xml, 'ROS_LOCALHOST_ONLY': '0', 'GO1_DDS_LOCAL': '0',
-                       'GUI': 'false'}
-        for key in ('ODOM_SOURCE', 'NAV_MODE'):
-            if key in os.environ:
-                environment[key] = os.environ[key]
-        options = ['--network', 'host']
-        if self.args.gpus:
-            options += ['--gpus', self.args.gpus]
-        for mount in self.args.mount:
-            options += ['--mount', mount]
-        self.runtime = ParticipantRuntime(ContainerSpec(self.args.participant_image, self.part,
-                                           (self.args.task,), environment=environment, docker_args=tuple(options)))
-        try:
-            self.runtime.create()
-            self.check_stop()
-            self.runtime.start()
-        except subprocess.CalledProcessError as error:
-            detail = error.stderr or error.stdout or str(error)
-            hint = ' Check NVIDIA driver and Docker GPU runtime (--gpus was requested).' if self.args.gpus else ''
-            raise RuntimeError(f'Participant create/start failed: {detail}{hint}') from error
+        if not self.args.sim_only:
+            # Inline XML: arbitrary participant images need no project-specific files.
+            xml = (ROOT/'user_data/ros2_custom_config_setup/cyclonedds_local.xml').read_text()
+            environment = {'ROS_DOMAIN_ID': str(domain), 'RMW_IMPLEMENTATION': 'rmw_cyclonedds_cpp',
+                           'CYCLONEDDS_URI': xml, 'ROS_LOCALHOST_ONLY': '0', 'GO1_DDS_LOCAL': '0',
+                           'GUI': 'false'}
+            for key in ('ODOM_SOURCE', 'NAV_MODE'):
+                if key in os.environ:
+                    environment[key] = os.environ[key]
+            options = ['--network', 'host']
+            if self.args.gpus:
+                options += ['--gpus', self.args.gpus]
+            for mount in self.args.mount:
+                options += ['--mount', mount]
+            self.runtime = ParticipantRuntime(ContainerSpec(self.args.participant_image, self.part,
+                                               (self.args.task,), environment=environment, docker_args=tuple(options)))
+            try:
+                self.runtime.create()
+                self.check_stop()
+                self.runtime.start()
+            except subprocess.CalledProcessError as error:
+                detail = error.stderr or error.stdout or str(error)
+                hint = ' Check NVIDIA driver and Docker GPU runtime (--gpus was requested).' if self.args.gpus else ''
+                raise RuntimeError(f'Participant create/start failed: {detail}{hint}') from error
         self.check_stop()
         if self.args.logs:
-            for name in (self.sim, self.part):
+            for name in ([self.sim] if self.args.sim_only else [self.sim, self.part]):
                 self.logs.append(subprocess.Popen(['docker', 'logs', '-f', name]))
-        print('Pair started; Ctrl+C to stop. Logs: docker logs -f CONTAINER', flush=True)
+        print(('Simulator started' if self.args.sim_only else 'Pair started') + '; Ctrl+C to stop. Logs: docker logs -f CONTAINER', flush=True)
         while True:
             self.check_stop()
-            for name, state in ((self.sim, self.sim_inspect()['State']), (self.part, self.runtime.state())):
+            states = [(self.sim, self.sim_inspect()['State'])]
+            if self.runtime:
+                states.append((self.part, self.runtime.state()))
+            for name, state in states:
                 if not state['Running']:
                     docker('logs', '--tail', '40', name)
                     raise RuntimeError(f'{name} exited unexpectedly (exit {state["ExitCode"]})')
@@ -236,6 +243,7 @@ def bind_mount(value):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--task', choices=['T2', 'T3', 'T4', 'T5'], required=True)
+    parser.add_argument('--sim-only', action='store_true', help='run only Simulator; Participant options are ignored')
     parser.add_argument('--participant-image', default=os.getenv('PARTICIPANT_IMAGE', 'go1-participant:example'))
     parser.add_argument('--sim-image', default=os.getenv('SIM_IMAGE', 'go1-sim:public'))
     gui = parser.add_mutually_exclusive_group()

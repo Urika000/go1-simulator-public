@@ -21,3 +21,18 @@ portable bundle + strace без внутреннего source access. Camera smo
 MIT для всего оригинального кода утверждена владельцем; notices upstream сохранены.
 NOT VERIFIED: загрузка с полностью пустым cache, GUI/GPU/LAN, full Nav2/campaigns.
 Ожидается review перед публикацией; push не выполнялся.
+
+
+15.11.2026 — инструкция запуска: добавлены
+[SIMULATOR_LAUNCH_GUIDE_RU.md](SIMULATOR_LAUNCH_GUIDE_RU.md) (включая подготовку
+Ubuntu/GitHub/Harbor) и минимальный `run_local.py --sim-only` через тот же Compose.
+Harbor v1.0 digest c79ddbece6cc7d00f114a9a9a09be0bae061ebb35ca722bcbe51bf75fce1b2e3
+повторно подтверждён pull/inspect. VERIFIED: sim-only и ручной shell T2/T3/T4/T5
+1/2 м, readiness и cleanup; совместные T2/T3/T4 и T5 1/2 м, DDS/camera payload,
+existing lifecycle/runtime checks. T5 2 м: первое окно без front frames, повтор
+получил все пять RGB/depth; стабильность каждого короткого окна не подтверждена.
+Ручная остановка Gazebo выводит XIO/Boost mutex assertion, хотя возврат в shell
+и удаление контейнера подтверждены. Один T4 readiness timeout при пересечении
+проверок; последовательный повтор PASS. Результаты, counts и ограничения:
+[SIMULATOR_LAUNCH_VERIFICATION_RU.md](SIMULATOR_LAUNCH_VERIFICATION_RU.md).
+GUI/GPU/LAN/full campaigns остаются NOT VERIFIED. Push не выполнялся.
