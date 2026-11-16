@@ -164,7 +164,7 @@ docker image inspect "$SIM_IMAGE" --format '{{range .RepoDigests}}{{println .}}{
 
 registry.cookcloud.ru/go1-hackathon-remote-stage/go1-sim@sha256:c79ddbece6cc7d00f114a9a9a09be0bae061ebb35ca722bcbe51bf75fce1b2e3
 
-Если digest отличается, уточните версию образа у организаторов; не считайте другой digest проверенным v1.0. Логин и пароль вводите интерактивно и не сохраняйте в исходниках проекта. Сборка из исходников после этого не требуется.
+Если digest отличается, уточните версию образа у организаторов; не считайте другой digest проверенным v1.0. Сборка из исходников после этого не требуется.
 
 Путь B. Собрать Simulator самостоятельно (необязательно)
 
@@ -172,7 +172,6 @@ registry.cookcloud.ru/go1-hackathon-remote-stage/go1-sim@sha256:c79ddbece6cc7d00
 
 ```bash
 # Получаем базовый образ и закреплённые исходные зависимости.
-docker login registry.cookcloud.ru
 docker pull registry.cookcloud.ru/base_images/ros2-base-humble-amd64:v1.0.1
 bash scripts/prepare-standalone-cache.sh
 
@@ -180,7 +179,11 @@ bash scripts/prepare-standalone-cache.sh
 SIM_IMAGE=go1-sim:public BUILD_JOBS=1 bash build_image.sh
 export SIM_IMAGE=go1-sim:public
 docker image inspect "$SIM_IMAGE" --format '{{.Os}}/{{.Architecture}} {{.Id}}'
+
+# Чтобы загружать образа (docker push) из registry авторизуйтесь
+docker login registry.cookcloud.ru
 ```
+Логин и пароль организаторы пришлют по почте, вводите их интерактивно и не сохраняйте в исходниках проекта.
 
 Ожидаем: локальный образ go1-sim:public платформы linux/amd64. Время сборки и загрузки зависимостей зависит от ресурсов и сети. Подробнее — README, раздел о подготовке и сборке. Самостоятельный образ не следует отождествлять с официальным digest из пути A.
 
