@@ -172,6 +172,7 @@ registry.cookcloud.ru/go1-hackathon-remote-stage/go1-sim@sha256:c79ddbece6cc7d00
 
 ```bash
 # Получаем базовый образ и закреплённые исходные зависимости.
+# Авторизация не обязательна, чтобы загружать образа из registry.
 docker pull registry.cookcloud.ru/base_images/ros2-base-humble-amd64:v1.0.1
 bash scripts/prepare-standalone-cache.sh
 
@@ -180,7 +181,7 @@ SIM_IMAGE=go1-sim:public BUILD_JOBS=1 bash build_image.sh
 export SIM_IMAGE=go1-sim:public
 docker image inspect "$SIM_IMAGE" --format '{{.Os}}/{{.Architecture}} {{.Id}}'
 
-# Чтобы загружать образа (docker push) из registry авторизуйтесь
+# Чтобы выгружать образа (docker push) в registry - авторизуйтесь. 
 docker login registry.cookcloud.ru
 ```
 Логин и пароль организаторы пришлют по почте, вводите их интерактивно и не сохраняйте в исходниках проекта.
