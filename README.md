@@ -217,6 +217,7 @@ python3 run_local.py --help
 Что бы симуляция Mujoco и Gazebo использовали дискретную карту для отрисовки графики [выполните эту иснтрукцию](https://github.com/Urika000/go1-simulator-public/blob/main/docs/go1-nvidia-instructions.md)
 
 Так же для ускорения отрисовки mujoco можно отключить тени (shadow) и отражения (reflection) в настройках OpenGL Effects. Это делает mujoco комфортной без использования какой-либо gpu.
+
 <img width="376" height="291" alt="Screenshot from 2026-11-18 00-19-03" src="https://github.com/user-attachments/assets/d67c7ca2-8467-498f-9467-fcc3536515d6" />
 
 Если проблема с фризами симулятора для вас не решилась, напиши в чат организоторов - посмотрим решения под ваш случай. Возможно вам нужно обратить внимание на настройки OpenGL.
