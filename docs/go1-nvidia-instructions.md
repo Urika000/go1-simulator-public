@@ -1,0 +1,87 @@
+## 1. Проверить драйвер
+
+```bash
+nvidia-smi
+```
+
+Если драйвера нет — нужно скачать его по официальной документации NVIDIA:
+
+[Драйверы NVIDIA](https://www.nvidia.com/en-us/drivers/?utm_source=chatgpt.com)  
+[Инструкция Ubuntu по установке драйверов NVIDIA](https://ubuntu.com/server/docs/how-to/graphics/install-nvidia-drivers/?utm_source=chatgpt.com)
+
+## 2. Установить и настроить NVIDIA Container Toolkit
+
+```bash
+bash -euo pipefail <<'SH'
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg
+
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
+  | sudo gpg --batch --yes --dearmor \
+      -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+curl -fsSL https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
+  | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
+  | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+sudo apt-get update
+sudo apt-get install -y nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+SH
+```
+
+## 3. Из корня go1-simulator-public выполнить команду для создания нового compose.nvidia.yml
+
+```bash
+cat > docker-compose.nvidia.yml <<'YAML'
+x-nvidia: &nvidia
+  runtime: nvidia
+  environment:
+    NVIDIA_VISIBLE_DEVICES: all
+    NVIDIA_DRIVER_CAPABILITIES: graphics,display,utility
+    __NV_PRIME_RENDER_OFFLOAD: "1"
+    __GLX_VENDOR_LIBRARY_NAME: nvidia
+
+services:
+  lowlevel:
+    <<: *nvidia
+  highlevel:
+    <<: *nvidia
+  course:
+    <<: *nvidia
+  shell:
+    <<: *nvidia
+YAML
+```
+
+## 4. Запустить симулятор MuJoCo с проверкой OpenGL, используя новый compose.nvidia.yml
+
+```bash
+export SIM_IMAGE=registry.cookcloud.ru/go1-hackathon-remote-stage/go1-sim:v1.0
+
+GUI=true ROS_DOMAIN_ID=151 docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.nvidia.yml \
+  run --rm --no-deps --pull never \
+  --name go1-nvidia-check \
+  lowlevel bash -c \
+  'glxinfo -B && exec ros2 launch go1_simulation scenario.launch.py scenario:=lowlevel gui:=true cameras:=false'
+```
+
+Ожидаем, что перед открытием графических окон появятся строки:
+
+```text
+OpenGL vendor string: NVIDIA Corporation
+OpenGL renderer string: NVIDIA ...
+```
+
+## 5. Запустить симулятор Gazebo
+
+```bash
+GUI=true ROS_DOMAIN_ID=151 docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.nvidia.yml \
+  run --rm --no-deps --pull never \
+  --name go1-gazebo-nvidia highlevel
+```
