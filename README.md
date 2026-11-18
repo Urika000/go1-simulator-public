@@ -148,9 +148,6 @@ git pull --ff-only origin main
 Хост, корень проекта:
 
 ```bash
-# Авторизуемся учётной записью Harbor, выданной организаторами.
-docker login registry.cookcloud.ru
-
 # Запоминаем имя релиза и скачиваем готовый образ.
 export SIM_IMAGE=registry.cookcloud.ru/go1-hackathon-remote-stage/go1-sim:v1.0
 docker pull "$SIM_IMAGE"
@@ -158,6 +155,9 @@ docker pull "$SIM_IMAGE"
 # Проверяем платформу и фактически полученный digest.
 docker image inspect "$SIM_IMAGE" --format '{{.Os}}/{{.Architecture}}'
 docker image inspect "$SIM_IMAGE" --format '{{range .RepoDigests}}{{println .}}{{end}}'
+
+# Авторизуемся учётной записью Harbor, выданной организаторами. НУЖНО ТОЛЬКО ДЛЯ PUSH (отправки образа).
+docker login registry.cookcloud.ru
 ```
 
 Ожидаем: строку linux/amd64 и следующий digest релиза (он подтверждён для опубликованного образа v1.0):
